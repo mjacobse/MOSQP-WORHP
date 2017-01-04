@@ -2,6 +2,7 @@
 #include "MatrixStructure.hpp"
 #include "MONLP.hpp"
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <limits>
 #include <numeric>
@@ -14,7 +15,7 @@ namespace mosqp
 CombinedMONLP::CombinedMONLP(MONLP const &monlp, std::vector<double> const &scalings)
     : NLP(monlp.GetNumVariables(), monlp.GetNumConstraints() + monlp.GetNumObjectives(),
           GetCombinedStructureDF(monlp), GetCombinedStructureDG(monlp), GetCombinedStructureHM(monlp),
-          monlp.UserDF(), false, monlp.UserHM(),
+          monlp.UserDF(), monlp.UserDG(), monlp.UserHM(),
           monlp.GetXL(), monlp.GetXU(), monlp.GetGL(), monlp.GetGU()),
       monlp(monlp), scalings(scalings)
 {
@@ -51,7 +52,7 @@ MatrixStructure CombinedMONLP::GetCombinedStructureDF(MONLP const &monlp)
 
 MatrixStructure CombinedMONLP::GetCombinedStructureDG(MONLP const &monlp)
 {
-    if (!monlp.GetStructureDG().IsDefined())
+    if (!monlp.GetStructureDG().IsDefined() && monlp.GetNumConstraints() > 0)
     {
         return MatrixStructure(false);
     }
@@ -201,22 +202,49 @@ void CombinedMONLP::EvalDF_impl(double const *const x, double *const df) const
     }
 }
 
-/*void CombinedMONLP::EvalDG_impl(double const *const x, double *const dg) const
+void CombinedMONLP::EvalDG_impl(double const *const x, double *const dg) const
 {
-    monlp.EvalDG(x, dg);
+    size_t const num_constraints = monlp.GetNumConstraints();
     size_t const num_objectives = monlp.GetNumObjectives();
-    size_t current_index = monlp.GetStructureDG().col.size();
+    size_t const num_variables = monlp.GetNumVariables();
+    size_t dg_index = 0;
 
-    for (size_t column = 0; column < num_variables; column += 1)
+    MatrixStructure const &structure_dg = monlp.GetStructureDG();
+    std::vector<double> dg_val(structure_dg.GetNumNonZeros());
+    monlp.EvalDG(x, dg_val.data());
+
+    for (size_t column = 1; column <= num_variables; column += 1)
     {
+        std::vector<size_t>::const_iterator dg_col = structure_dg.GetColBegin();
+        for (size_t i = 0; i < structure_dg.GetNumNonZeros(); i += 1)
+        {
+            if (dg_col[i] == column)
+            {
+                dg[dg_index] = dg_val[i];
+                dg_index += 1;
+            }
+        }
+
         for (size_t objective_index = 0; objective_index < num_objectives; objective_index += 1)
         {
-            // TODO: fix this so that its in columnwise order
-            monlp.EvalDF(x, dg + current_index, objective_index);
-            current_index += monlp.GetStructureDF(objective_index).row.size();
+            MatrixStructure const &structure_df = monlp.GetStructureDF(objective_index);
+            std::vector<double> df_val(structure_df.GetNumNonZeros());
+            monlp.EvalDF(x, df_val.data(), objective_index);
+
+            std::vector<size_t>::const_iterator df_row = structure_df.GetRowBegin();
+            for (size_t i = 0; i < structure_df.GetNumNonZeros(); i += 1)
+            {
+                if (df_row[i] == column)
+                {
+                    dg[dg_index] = df_val[i];
+                    dg_index += 1;
+                }
+            }
         }
     }
-}*/
+
+    assert(dg_index == structureDG.GetNumNonZeros());
+}
 
 void CombinedMONLP::EvalHM_impl(double const *x, double const *mu, double scale_obj, double *hm) const
 {
