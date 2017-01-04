@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="algorithm">
+      <UniqueIdentifier>{6de7f084-a864-4b83-b6b0-1af76d913799}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test_problems">
+      <UniqueIdentifier>{08a4803e-2ef2-4bc8-93ad-dc69ed8ceedd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nlp_solver">
+      <UniqueIdentifier>{87017169-7e39-4ddb-abea-f7f0a2c3b8b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="problem_formulation">
+      <UniqueIdentifier>{02eea47a-4eee-4485-a55e-a6234cb0cbd2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\algorithm\MOSQP.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithm\ParetoFront.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithm\Point.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\problem_formulation\SingleMONLP.cpp">
+      <Filter>problem_formulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\problem_formulation\NLP.cpp">
+      <Filter>problem_formulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\problem_formulation\MONLP.cpp">
+      <Filter>problem_formulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\problem_formulation\CombinedMONLP.cpp">
+      <Filter>problem_formulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\problem_formulation\ConstrainedProblem.cpp">
+      <Filter>problem_formulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\problem_formulation\MatrixStructure.cpp">
+      <Filter>problem_formulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nlp_solver\WorhpSolver.cpp">
+      <Filter>nlp_solver</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_problems\ABC_comp.cpp">
+      <Filter>test_problems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_problems\BNH.cpp">
+      <Filter>test_problems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_problems\GE3.cpp">
+      <Filter>test_problems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_problems\OSY.cpp">
+      <Filter>test_problems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_problems\BK1.cpp">
+      <Filter>test_problems</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\algorithm\MOSQP.hpp">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\algorithm\ParetoFront.hpp">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\algorithm\Point.hpp">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\test_problems\TestProblems.hpp">
+      <Filter>test_problems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\problem_formulation\SingleMONLP.hpp">
+      <Filter>problem_formulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\problem_formulation\NLP.hpp">
+      <Filter>problem_formulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\problem_formulation\MONLP.hpp">
+      <Filter>problem_formulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\problem_formulation\CombinedMONLP.hpp">
+      <Filter>problem_formulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\problem_formulation\ConstrainedProblem.hpp">
+      <Filter>problem_formulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\problem_formulation\MatrixStructure.hpp">
+      <Filter>problem_formulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nlp_solver\WorhpSolver.hpp">
+      <Filter>nlp_solver</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="src\worhp.xml" />
+  </ItemGroup>
+</Project>
