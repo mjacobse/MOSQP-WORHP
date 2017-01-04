@@ -37,7 +37,7 @@ private:
 
     double EvalF_impl(double const *x) const override;
     void EvalG_impl(double const *x, double *g) const override;
-    void EvalDF_impl(double const *const x, double *const df) const override;
+    void EvalDF_impl(double const *x, double *df) const override;
     //void EvalDG_impl(double const *x, double *dg) const override;
     void EvalHM_impl(double const *x, double const *mu, double scale_obj, double *hm) const override;
 };
