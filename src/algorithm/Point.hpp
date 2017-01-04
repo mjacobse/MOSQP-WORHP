@@ -43,7 +43,6 @@ private:
     std::vector<double> f;
     std::vector<double> g;
     std::vector<double> cv;
-    // i think "mutable" should be ok in this case
     mutable bool stopped;
 
     void UpdateFunctionValues(MONLP const &monlp);

@@ -36,15 +36,12 @@ Point::Point(std::vector<double> const &lower_bounds, std::vector<double> const 
       f(monlp.GetNumObjectives()), g(monlp.GetNumConstraints()),
       cv(monlp.GetNumVariables() * 2 + monlp.GetNumConstraints() * 2)
 {
-    std::vector<double> new_x;
     std::uniform_real_distribution<double> unif;
     for (size_t i = 0; i < lower_bounds.size(); i += 1)
     {
         unif = std::uniform_real_distribution<double>(lower_bounds[i], upper_bounds[i]);
-        new_x.emplace_back(unif(re));
+        x[i] = unif(re);
     }
-
-    x = new_x;
     UpdateFunctionValues(monlp);
 }
 
