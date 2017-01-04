@@ -33,7 +33,7 @@ void WorhpSolver::DoMajorIter()
 {
     int major_iter = wsp.MajorIter;
     bool terminated = false;
-    while (!terminated && (wsp.MajorIter == major_iter || wsp.CurrentFeasMode != 0))
+    while (!terminated && (GetPreviousStage(&cnt, -1) != Finalise || wsp.CurrentFeasMode != 0))
     {
         terminated = !Loop();
     }
@@ -49,7 +49,6 @@ void WorhpSolver::Solve()
 void WorhpSolver::SetInitialGuess(std::vector<double> const &x)
 {
     std::copy(x.begin(), x.end(), opt.X);
-
     if (!(GetCurrentStage(&cnt) == Init_Data))
     {
         SetNextStage(&cnt, Pre_KKT);
