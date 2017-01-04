@@ -15,7 +15,7 @@ public:
     ParetoFront(int max_points, size_t num_objectives, std::vector<Point> points);
 
     void AddPoint(Point const &new_point, bool init = false);
-    void AddPoints(std::vector<Point> const &points);
+    int AddPoints(std::vector<Point> const &points);
     std::vector<Point>::iterator RemovePoint(std::vector<Point>::const_iterator it);
     // set all points unstopped
     void UnstopAll();
@@ -51,7 +51,8 @@ private:
     // the front it will not be inserted. Also removes any points that are in the front and are
     // dominated by the new point if it gets inserted.
     // Ignores domination when init == true
-    void TryInsertPoint(Point const &new_point, bool init = false);
+    // Returns whether the point was inserted or not
+    bool TryInsertPoint(Point const &new_point, bool init = false);
     // Inserts the point into the Pareto front while also updating
     // the sorted lists in "objectiveSortings".
     void InsertPoint(Point new_point);

@@ -29,11 +29,15 @@ void ParetoFront::AddPoint(Point const &new_point, bool const init)
     assert(IsSortingCorrect());
 }
 
-void ParetoFront::AddPoints(std::vector<Point> const &new_points)
+int ParetoFront::AddPoints(std::vector<Point> const &new_points)
 {
+    int num_added = 0;
     for (Point const &point : new_points)
     {
-        TryInsertPoint(point);
+        if (TryInsertPoint(point))
+        {
+            num_added += 1;
+        }
     }
 
     if (points.size() > maxPoints)
@@ -42,6 +46,7 @@ void ParetoFront::AddPoints(std::vector<Point> const &new_points)
     }
 
     assert(IsSortingCorrect());
+    return num_added;
 }
 
 std::vector<Point>::iterator ParetoFront::RemovePoint(std::vector<Point>::const_iterator it)
@@ -137,7 +142,7 @@ std::vector<Point>::const_iterator ParetoFront::cend() const
     return points.cend();
 }
 
-void ParetoFront::TryInsertPoint(Point const &new_point, bool const init)
+bool ParetoFront::TryInsertPoint(Point const &new_point, bool const init)
 {
     std::vector<size_t> to_remove;
     size_t const length = points.size();
@@ -150,7 +155,7 @@ void ParetoFront::TryInsertPoint(Point const &new_point, bool const init)
         if (!init && new_point.IsDominated(points[i]))
         {
             new_point.IsDominated(points[i]);
-            return;
+            return false;
         }
         else if (!init && points[i].IsDominated(new_point))
         {
@@ -164,6 +169,7 @@ void ParetoFront::TryInsertPoint(Point const &new_point, bool const init)
     }
 
     InsertPoint(new_point);
+    return true;
 }
 
 void ParetoFront::InsertPoint(Point const new_point)

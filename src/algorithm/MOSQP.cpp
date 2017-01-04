@@ -24,11 +24,11 @@ Parameters::Parameters()
       TOL_DOMINATION(1e-5),
       SPREAD_MAX_STEPS(20),
       SPREAD_ARMIJO_MIN_ALPHA(1e-5),
-      SPREAD_ARMIJO_BETA(0.1),
+      SPREAD_ARMIJO_BETA(0.5),
       SPREAD_MIN_SEARCH_LENGTH(1e-5),
       REFINE_MAX_STEPS(200),
       REFINE_ARMIJO_MIN_ALPHA(1e-5),
-      REFINE_ARMIJO_BETA(0.1),
+      REFINE_ARMIJO_BETA(0.5),
       REFINE_MIN_SEARCH_LENGTH(1e-5)
 {
 }
@@ -43,7 +43,7 @@ MOSQP::MOSQP(MONLP &monlp, std::vector<Point> initial_points, Parameters paramet
 
     log << "Stage 1" << std::endl;
     CompleteInitialPoints();
-    std::cout << "============== Complete Initial Points done ==============" << std::endl;
+    std::cout << "================= Complete Initial Points =================" << std::endl;
     paretoFront.WriteF(log);
 }
 
@@ -55,19 +55,16 @@ MOSQP::~MOSQP()
 ParetoFront MOSQP::Solve()
 {
     log << "Stage 2" << std::endl;
+    std::cout << "==================== SpreadParetoFront ====================" << std::endl;
     SpreadParetoFront();
-    std::cout << "================= SpreadParetoFront Done =================" << std::endl;
-    paretoFront.WriteF(std::cout);
 
     log << "Stage 3" << std::endl;
+    std::cout << "================= AddExtremeParetoPoints ==================" << std::endl;
     AddExtremeParetoPoints();
-    std::cout << "============== AddExtremeParetoPoints done ===============" << std::endl;
-    paretoFront.WriteF(std::cout);
 
     log << "Stage 4" << std::endl;
+    std::cout << "==================== RefineParetoFront ====================" << std::endl;
     RefineParetoFront();
-    std::cout << "================= RefineParetoFront done =================" << std::endl;
-    paretoFront.WriteF(std::cout);
 
     assert(paretoFront.AllFeasible());
     assert(paretoFront.AllNonDominated());
@@ -118,7 +115,8 @@ void MOSQP::SpreadParetoFront()
         worhp[objective_index].par.LowPassFilter = false;
         worhp[objective_index].par.MaxIter = std::numeric_limits<int>::max();
         worhp[objective_index].par.NLPmethod = 1;  // use merit function instead of filter
-        worhp[objective_index].par.TolFeas = parameters.TOL_FEAS;
+        worhp[objective_index].par.TolFeas = 1e-20;
+        worhp[objective_index].par.TolOpti = 1e-20;
     }
 
     std::vector<Point> new_points;
@@ -168,17 +166,18 @@ void MOSQP::SpreadParetoFront()
                 // they do this for some reason, but why remove points just because they are
                 // infeasible when they will be thrown out by cleanup method anyways. These
                 // might still be decent starting points for the refinement stage.
-                /*if (!it_point->IsFeasible())
+                if (!it_point->IsFeasible())
                 {
                     it_point = paretoFront.RemovePoint(it_point);
                     continue;
-                }*/
+                }
             }
 
             it_point += 1;
         }
 
-        paretoFront.AddPoints(new_points);
+        int num_added = paretoFront.AddPoints(new_points);
+        std::cout << "SpreadParetoFront: Added " << num_added << " points" << std::endl;
         paretoFront.WriteF(log);
         if (paretoFront.AllStopped())
         {
@@ -257,7 +256,8 @@ void MOSQP::RefineParetoFront()
     worhp->par.LowPassFilter = false;
     worhp->par.MaxIter = std::numeric_limits<int>::max();
     worhp->par.NLPmethod = 1;  // use merit function instead of filter
-    worhp->par.TolFeas = parameters.TOL_FEAS;
+    worhp->par.TolFeas = 1e-20;
+    worhp->par.TolOpti = 1e-20;
 
     std::vector<Point> new_points;
     std::vector<double> x;
@@ -331,9 +331,10 @@ void MOSQP::RefineParetoFront()
             ++it_point;
         }
 
-        paretoFront.AddPoints(new_points);
+        int num_added = paretoFront.AddPoints(new_points);
+        std::cout << "RefineParetoFront: Added " << num_added << " points" << std::endl;
         paretoFront.WriteF(log);
-        if (paretoFront.AllStopped() && paretoFront.AllFeasible() && paretoFront.AllNonDominated())
+        if (paretoFront.AllStopped())
         {
             break;
         }
