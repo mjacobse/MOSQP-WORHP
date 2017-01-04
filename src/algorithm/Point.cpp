@@ -150,7 +150,7 @@ bool Point::IsDominated(Point const &point) const
 {
     for (size_t i = 0; i < f.size(); i += 1)
     {
-        if (f[i] < point.f[i])
+        if (f[i] < point.f[i] + TOL_DOMINATION)
         {
             return false;
         }
