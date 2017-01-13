@@ -16,7 +16,7 @@ public:
 
     Point(std::vector<double> const &x, MONLP const &monlp);
     Point(std::vector<double> const &x, std::vector<double> const &lambda, std::vector<double> const &mu,
-          MONLP const &monlp);
+          std::vector<double> const &penalty, double merit_value, MONLP const &monlp);
     // Creates a random point within the given bounds.
     Point(std::vector<double> const &lower_bounds, std::vector<double> const &upper_bounds, MONLP const &monlp);
 
@@ -29,6 +29,8 @@ public:
     std::vector<double> const & GetLambda() const;
     std::vector<double> const & GetMu() const;
     std::vector<double> const & GetConstraints() const;
+    std::vector<double> const & GetPenalties() const;
+    double GetMeritValue() const;
     double GetDistance(double *other_x) const;
     bool HasMultipliers() const;
     bool IsStopped() const;
@@ -43,6 +45,8 @@ private:
     std::vector<double> f;
     std::vector<double> g;
     std::vector<double> cv;
+    std::vector<double> penalties;
+    double meritValue;
     mutable bool stopped;
 
     void UpdateFunctionValues(MONLP const &monlp);

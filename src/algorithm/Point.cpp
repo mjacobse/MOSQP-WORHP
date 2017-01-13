@@ -15,32 +15,45 @@ double Point::TOL_DOMINATION;
 Point::Point(std::vector<double> const &x, MONLP const &monlp)
     : x(x), lambda(), mu(), stopped(false),
       f(monlp.GetNumObjectives()), g(monlp.GetNumConstraints()),
-      cv(monlp.GetNumVariables() * 2 + monlp.GetNumConstraints() * 2)
+      cv(monlp.GetNumVariables() * 2 + monlp.GetNumConstraints() * 2),
+      penalties(), meritValue(std::numeric_limits<double>::infinity())
 {
     UpdateFunctionValues(monlp);
 }
 
 Point::Point(std::vector<double> const &x, std::vector<double> const &lambda,
-             std::vector<double> const &mu, MONLP const &monlp)
+             std::vector<double> const &mu, std::vector<double> const &penalties,
+             double const merit_value, MONLP const &monlp)
     : x(x), lambda(lambda), mu(mu), stopped(false),
       f(monlp.GetNumObjectives()), g(monlp.GetNumConstraints()),
-      cv(monlp.GetNumVariables() * 2 + monlp.GetNumConstraints() * 2)
+      cv(monlp.GetNumVariables() * 2 + monlp.GetNumConstraints() * 2),
+      penalties(penalties), meritValue(merit_value)
 {
     UpdateFunctionValues(monlp);
 }
 
-static std::default_random_engine re;
+static std::default_random_engine random_engine;
 Point::Point(std::vector<double> const &lower_bounds, std::vector<double> const &upper_bounds,
              MONLP const &monlp)
     : x(monlp.GetNumVariables()), lambda(), mu(),
       f(monlp.GetNumObjectives()), g(monlp.GetNumConstraints()),
-      cv(monlp.GetNumVariables() * 2 + monlp.GetNumConstraints() * 2)
+      cv(monlp.GetNumVariables() * 2 + monlp.GetNumConstraints() * 2),
+      penalties(), meritValue(std::numeric_limits<double>::infinity())
 {
-    std::uniform_real_distribution<double> unif;
+    std::uniform_real_distribution<double> uniform_distribution;
+    std::normal_distribution<double> normal_distribution;
     for (size_t i = 0; i < lower_bounds.size(); i += 1)
     {
-        unif = std::uniform_real_distribution<double>(lower_bounds[i], upper_bounds[i]);
-        x[i] = unif(re);
+        if (std::isfinite(lower_bounds[i]) || std::isfinite(upper_bounds[i]))
+        {
+            uniform_distribution = std::uniform_real_distribution<double>(lower_bounds[i], upper_bounds[i]);
+            x[i] = uniform_distribution(random_engine);
+        }
+        else
+        {
+            normal_distribution = std::normal_distribution<double>(0.0, 5.0);
+            x[i] = normal_distribution(random_engine);
+        }
     }
     UpdateFunctionValues(monlp);
 }
@@ -107,6 +120,11 @@ std::vector<double> const & Point::GetConstraints() const
     return g;
 }
 
+std::vector<double> const & Point::GetPenalties() const
+{
+    return penalties;
+}
+
 double Point::GetDistance(double *const other_x) const
 {
     double distance = 0;
@@ -117,6 +135,11 @@ double Point::GetDistance(double *const other_x) const
 
     distance = std::sqrt(distance);
     return distance;
+}
+
+double Point::GetMeritValue() const
+{
+    return meritValue;
 }
 
 bool Point::HasMultipliers() const
@@ -150,13 +173,13 @@ bool Point::IsDominated(Point const &point) const
 {
     for (size_t i = 0; i < f.size(); i += 1)
     {
-        if (f[i] < point.f[i] + TOL_DOMINATION)
+        if (f[i] < point.f[i])
         {
             return false;
         }
     }
 
-    if (*std::max_element(cv.begin(), cv.end()) < *std::max_element(point.cv.begin(), point.cv.end()))
+    if (*std::max_element(cv.begin(), cv.end()) < *std::max_element(point.cv.begin(), point.cv.end()) - TOL_FEAS)
     {
         return false;
     }

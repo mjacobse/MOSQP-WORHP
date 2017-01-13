@@ -33,7 +33,8 @@ void WorhpSolver::DoMajorIter()
 {
     int major_iter = wsp.MajorIter;
     bool terminated = false;
-    while (!terminated && (GetPreviousStage(&cnt, -1) != Finalise || wsp.CurrentFeasMode != 0))
+    while (!terminated && (wsp.MajorIter - major_iter) < 20 &&
+           (GetPreviousStage(&cnt, -1) != Finalise || wsp.CurrentFeasMode != 0))
     {
         terminated = !Loop();
     }
@@ -65,8 +66,11 @@ void WorhpSolver::SetInitialGuess(Point const &point)
     {
         std::vector<double> const &lambda = point.GetLambda();
         std::vector<double> const &mu = point.GetMu();
-        std::copy(lambda.begin(), lambda.end(), opt.Lambda);
-        std::copy(mu.begin(), mu.end(), opt.Mu);
+        std::vector<double> const &penalties = point.GetPenalties();
+        std::copy(lambda.cbegin(), lambda.cend(), opt.Lambda);
+        std::copy(mu.cbegin(), mu.cend(), opt.Mu);
+        std::copy(penalties.cbegin(), penalties.cend(), RWS_PTR((&wsp), wsp.penalty));
+        wsp.MeritOldValue = point.GetMeritValue();
     }
 }
 

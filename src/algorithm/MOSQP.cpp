@@ -29,7 +29,7 @@ Parameters::Parameters()
       REFINE_MAX_STEPS(200),
       REFINE_ARMIJO_MIN_ALPHA(1e-5),
       REFINE_ARMIJO_BETA(0.5),
-      REFINE_MIN_SEARCH_LENGTH(1e-5)
+      REFINE_MIN_SEARCH_LENGTH(5e-5)
 {
 }
 
@@ -41,7 +41,7 @@ MOSQP::MOSQP(MONLP &monlp, std::vector<Point> initial_points, Parameters paramet
     Point::TOL_FEAS = parameters.TOL_FEAS;
     Point::TOL_DOMINATION = parameters.TOL_DOMINATION;
 
-    log << "Stage 1" << std::endl;
+    log << "Stage 0: Initialisation - " << monlp.GetName() << std::endl;
     CompleteInitialPoints();
     std::cout << "================= Complete Initial Points =================" << std::endl;
     paretoFront.WriteF(log);
@@ -54,15 +54,16 @@ MOSQP::~MOSQP()
 
 ParetoFront MOSQP::Solve()
 {
-    log << "Stage 2" << std::endl;
+    log << "Stage 1: Spread - " << monlp.GetName() << std::endl;
     std::cout << "==================== SpreadParetoFront ====================" << std::endl;
     SpreadParetoFront();
 
-    log << "Stage 3" << std::endl;
+    /*log << "Stage 1.5: Extreme Points - " << monlp.GetName() << std::endl;
     std::cout << "================= AddExtremeParetoPoints ==================" << std::endl;
-    AddExtremeParetoPoints();
+    AddExtremeParetoPoints();*/
+    scalings = { 1.0, 1.0 };
 
-    log << "Stage 4" << std::endl;
+    log << "Stage 2: Refine - " << monlp.GetName() << std::endl;
     std::cout << "==================== RefineParetoFront ====================" << std::endl;
     RefineParetoFront();
 
@@ -80,7 +81,7 @@ void MOSQP::CompleteInitialPoints()
     int tries;
     for (tries = 0; tries < parameters.numCompletionTries; tries += 1)
     {
-        paretoFront.AddPoint(Point(x_l, x_u, monlp), !paretoFront.IsFull());
+        paretoFront.AddPoint(Point(x_l, x_u, monlp));
         if (paretoFront.IsFull() && paretoFront.AllFeasible() && paretoFront.AllNonDominated())
         {
             break;
@@ -123,6 +124,7 @@ void MOSQP::SpreadParetoFront()
     std::vector<double> x;
     std::vector<double> lambda;
     std::vector<double> mu;
+    std::vector<double> penalties;
     double step_length;
 
     for (int step = 0; step < parameters.SPREAD_MAX_STEPS; step += 1)
@@ -157,7 +159,9 @@ void MOSQP::SpreadParetoFront()
                             x.assign(worhp[i].opt.X, worhp[i].opt.X + monlp.GetNumVariables());
                             lambda.assign(worhp[i].opt.Lambda, worhp[i].opt.Lambda + monlp.GetNumVariables());
                             mu.assign(worhp[i].opt.Mu, worhp[i].opt.Mu + monlp.GetNumConstraints());
-                            new_points.emplace_back(x, lambda, mu, monlp);
+                            double *penalty = RWS_PTR((&worhp[i].wsp), worhp[i].wsp.penalty);
+                            penalties.assign(penalty, penalty + monlp.GetNumConstraints());
+                            new_points.emplace_back(x, lambda, mu, penalties, worhp[i].wsp.MeritNewValue, monlp);
                         }
                     }
                 }
@@ -231,7 +235,7 @@ void MOSQP::AddExtremeParetoPoints()
         {
             new_coordinates.assign(worhp->opt.X, worhp->opt.X + monlp.GetNumVariables());
             Point extreme_point(new_coordinates, monlp);
-            scalings.push_back(std::max(extreme_point.GetObjectiveValue(objective_index), 1.0));
+            scalings.push_back(1.0 + std::abs(extreme_point.GetObjectiveValue(objective_index)));
             paretoFront.AddPoint(extreme_point);
         }
         else
@@ -263,6 +267,7 @@ void MOSQP::RefineParetoFront()
     std::vector<double> x;
     std::vector<double> lambda;
     std::vector<double> mu;
+    std::vector<double> penalties;
     double step_length;
 
     for (int step = 0; step < parameters.REFINE_MAX_STEPS; step += 1)
@@ -289,8 +294,15 @@ void MOSQP::RefineParetoFront()
                     x.assign(worhp->opt.X, worhp->opt.X + combinedProblem.GetNumVariables());
                     lambda.assign(worhp->opt.Lambda, worhp->opt.Lambda + combinedProblem.GetNumVariables());
                     mu.assign(worhp->opt.Mu, worhp->opt.Mu + combinedProblem.GetNumConstraints());
-                    new_points.emplace_back(x, lambda, mu, monlp);
+                    double *penalty = RWS_PTR((&worhp->wsp), worhp->wsp.penalty);
+                    penalties.assign(penalty, penalty + monlp.GetNumConstraints());
+                    new_points.emplace_back(x, lambda, mu, penalties, worhp->wsp.MeritNewValue, monlp);
                     step_length = it_point->GetDistance(worhp->opt.X);
+
+                    if (!new_points.back().IsFeasible())
+                    {
+                        int a = 0;
+                    }
 
                     if (worhp->cnt.status >= TerminateSuccess)
                     {
