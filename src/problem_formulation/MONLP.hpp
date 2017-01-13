@@ -3,6 +3,7 @@
 #include "ConstrainedProblem.hpp"
 #include "MatrixStructure.hpp"
 #include <cstddef>
+#include <string>
 #include <vector>
 
 
@@ -31,6 +32,8 @@ public:
     size_t GetNumEvalDF() const;
     size_t GetNumEvalD2F() const;
     size_t GetNumEvalD2G() const;
+
+    virtual std::string GetName() const = 0;
 
 protected:
     MONLP(size_t num_variables, size_t num_constraints, size_t num_objectives,
