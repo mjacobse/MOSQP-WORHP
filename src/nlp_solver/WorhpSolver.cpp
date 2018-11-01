@@ -1,5 +1,5 @@
 #include "WorhpSolver.hpp"
-#include "../../include/worhp/worhp.h"
+#include "worhp/worhp.h"
 #include "../algorithm/Point.hpp"
 #include "../problem_formulation/MatrixStructure.hpp"
 #include "../problem_formulation/NLP.hpp"
@@ -69,7 +69,7 @@ void WorhpSolver::SetInitialGuess(Point const &point)
         std::vector<double> const &penalties = point.GetPenalties();
         std::copy(lambda.cbegin(), lambda.cend(), opt.Lambda);
         std::copy(mu.cbegin(), mu.cend(), opt.Mu);
-        std::copy(penalties.cbegin(), penalties.cend(), RWS_PTR((&wsp), wsp.penalty));
+        std::copy(penalties.cbegin(), penalties.cend(), wsp.penalty);
         wsp.MeritOldValue = point.GetMeritValue();
     }
 }

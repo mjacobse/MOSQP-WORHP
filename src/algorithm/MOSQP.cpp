@@ -1,7 +1,7 @@
 #include "MOSQP.hpp"
 #include "ParetoFront.hpp"
 #include "Point.hpp"
-#include "../../include/worhp/worhp.h"
+#include "worhp/worhp.h"
 #include "../nlp_solver/WorhpSolver.hpp"
 #include "../problem_formulation/MONLP.hpp"
 #include "../problem_formulation/CombinedMONLP.hpp"
@@ -115,7 +115,7 @@ void MOSQP::SpreadParetoFront()
         worhp[objective_index].par.KeepAcceptableSol = false;
         worhp[objective_index].par.LowPassFilter = false;
         worhp[objective_index].par.MaxIter = std::numeric_limits<int>::max();
-        worhp[objective_index].par.NLPmethod = 1;  // use merit function instead of filter
+        worhp[objective_index].par.LineSearchMethod = 1;  // use merit function instead of filter
         worhp[objective_index].par.TolFeas = 1e-20;
         worhp[objective_index].par.TolOpti = 1e-20;
     }
@@ -159,7 +159,7 @@ void MOSQP::SpreadParetoFront()
                             x.assign(worhp[i].opt.X, worhp[i].opt.X + monlp.GetNumVariables());
                             lambda.assign(worhp[i].opt.Lambda, worhp[i].opt.Lambda + monlp.GetNumVariables());
                             mu.assign(worhp[i].opt.Mu, worhp[i].opt.Mu + monlp.GetNumConstraints());
-                            double *penalty = RWS_PTR((&worhp[i].wsp), worhp[i].wsp.penalty);
+                            double *penalty = worhp[i].wsp.penalty;
                             penalties.assign(penalty, penalty + monlp.GetNumConstraints());
                             new_points.emplace_back(x, lambda, mu, penalties, worhp[i].wsp.MeritNewValue, monlp);
                         }
@@ -259,7 +259,7 @@ void MOSQP::RefineParetoFront()
     worhp->par.KeepAcceptableSol = false;
     worhp->par.LowPassFilter = false;
     worhp->par.MaxIter = std::numeric_limits<int>::max();
-    worhp->par.NLPmethod = 1;  // use merit function instead of filter
+    worhp->par.LineSearchMethod = 1;  // use merit function instead of filter
     worhp->par.TolFeas = 1e-20;
     worhp->par.TolOpti = 1e-20;
 
@@ -294,7 +294,7 @@ void MOSQP::RefineParetoFront()
                     x.assign(worhp->opt.X, worhp->opt.X + combinedProblem.GetNumVariables());
                     lambda.assign(worhp->opt.Lambda, worhp->opt.Lambda + combinedProblem.GetNumVariables());
                     mu.assign(worhp->opt.Mu, worhp->opt.Mu + combinedProblem.GetNumConstraints());
-                    double *penalty = RWS_PTR((&worhp->wsp), worhp->wsp.penalty);
+                    double *penalty = worhp->wsp.penalty;
                     penalties.assign(penalty, penalty + monlp.GetNumConstraints());
                     new_points.emplace_back(x, lambda, mu, penalties, worhp->wsp.MeritNewValue, monlp);
                     step_length = it_point->GetDistance(worhp->opt.X);

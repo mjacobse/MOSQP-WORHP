@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../include/worhp/worhp.h"
+#include "worhp/worhp.h"
 #include "../algorithm/Point.hpp"
 #include "../problem_formulation/NLP.hpp"
 #include <vector>
