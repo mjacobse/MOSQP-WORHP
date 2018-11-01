@@ -87,7 +87,7 @@ void MOSQP::CompleteInitialPoints()
             break;
         }
     }
-    
+
     std::cout << "CompleteInitialPoints: Paretofront has " << paretoFront.NumPoints() << " points"
               << " after " << tries << " tries." << std::endl;
 }
@@ -298,11 +298,6 @@ void MOSQP::RefineParetoFront()
                     penalties.assign(penalty, penalty + monlp.GetNumConstraints());
                     new_points.emplace_back(x, lambda, mu, penalties, worhp->wsp.MeritNewValue, monlp);
                     step_length = it_point->GetDistance(worhp->opt.X);
-
-                    if (!new_points.back().IsFeasible())
-                    {
-                        int a = 0;
-                    }
 
                     if (worhp->cnt.status >= TerminateSuccess)
                     {
